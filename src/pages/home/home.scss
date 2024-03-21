@@ -1,0 +1,64 @@
+@import '../../styles/global.scss';
+
+.chat-room {
+    @include flex-column;
+    color: $theme-color;
+    height: 600px;
+    width: 800px;
+    border: 1px solid #dcdcdc;
+
+
+    .user-tab-row {
+        height: max-content;
+        border-bottom: 1px solid #dcdcdc;
+        padding: 5px;
+        flex-shrink: 0;
+        background-color: $theme-color;
+    }
+
+    .session-tabs {
+        width: 200px;
+        flex-shrink: 0;
+        border-right: 1px solid #dcdcdc;
+        height: 100%;
+
+        .session-item {
+            border-bottom: 1px solid #dcdcdc;
+            height: 50px;
+            padding: 5px 0px 5px 5px;
+            cursor: pointer;
+            width: 190px;
+        }
+
+        .session-item-info {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            padding-left: 5px;
+        }
+    }
+
+    .session-content {
+        flex: 1;
+        @include flex-column-center;
+        padding: 10px;
+
+        .message-area {
+            flex: 1;
+            margin-bottom: 20px;
+            width: 100%;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+        }
+
+        .ant-input {
+            height: 150px !important;
+            flex-shrink: 0;
+            width: 100%;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            resize: none;
+            color: #333;
+        }
+    }
+}

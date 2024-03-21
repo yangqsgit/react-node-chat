@@ -1,0 +1,32 @@
+@import './vars.scss';
+
+@mixin flex-row {
+    display: flex;
+}
+// @mixin flex-row-center {
+//     display: flex;
+//     align-items: center;
+// }
+@mixin flex-row-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-row-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+@mixin flex-column {
+    display: flex;
+    flex-direction: column;
+}
+@mixin flex-column-between {
+    @include flex-column;
+    justify-content: space-between
+}
+@mixin flex-column-center {
+    @include flex-column;
+    align-items: center;
+}

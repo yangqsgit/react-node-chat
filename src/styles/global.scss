@@ -1,0 +1,30 @@
+@import './mixin.scss';
+* {
+    box-sizing: border-box
+}
+.flex-row {
+    @include flex-row;
+}
+
+.flex-row-center {
+    @include flex-row-center;
+}
+
+.flex-column {
+    @include flex-column
+}
+
+.flex-column-between {
+    @include flex-column-between;
+}
+
+.flex-column-center {
+    @include flex-column-center;
+}
+
+.color333 {
+    color: #333;
+}
+.color999 {
+    color: #999;
+}
