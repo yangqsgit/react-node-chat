@@ -1,30 +1,30 @@
 import React, { useState } from 'react';
 import { Input } from 'antd';
-import { users } from 'src/datas/user';
+import { users } from 'src/utils/datas/user';
 import { MessageType, SessionType } from 'src/enums';
 import { useSelector } from 'react-redux';
 import { RootState } from 'src/store';
-
+import ChatRoomCore from 'src/utils/chat/chatRoom';
 export function ChatRoom() {
     const user = useSelector<RootState>(state => state.chatRoom.user)
-    const list: Array<Session> = [{
-        messageList: [],
-        users: [user as User, users[4]],
-        id: '1',
-        type: SessionType.C2C
-    }]
-    list[0].messageList.push({
-        sender: users[0],
-        sendTime: new Date(),
-        type: MessageType.TEXT,
-        content: 'hhhh',
-        id: '1'
-    })
-    const [activeSession, setActiveSession] = useState<Session>(list[0])
-    const [sessionList] = useState<Array<Session>>(list)
-    function selectSession(session: Session) {
-        if (activeSession.id === session.id) return
-        setActiveSession(session)
+    const list = users.filter(i => i.id !== (user as User).id)
+    const [activeUser, setActiveUser] = useState<User>(list[0])
+    const [userList] = useState<Array<User>>(list)
+
+    const im = new ChatRoomCore('ws://127.0.0.1:7979?userId=' + (user as User).id, user as User)
+    im.onerror = (e) => {
+        console.log(e, '======err')
+    }
+    im.onmessage = (e) => {
+        console.log(e);
+    }
+    const [sessions, SetSessions] = useState<Array<Session>>([])
+
+
+
+    function selectUser(user: User) {
+        if (activeUser.id === user.id) return
+        setActiveUser(user)
     }
     return <div className='chat-room'>
         <div className='user-tab-row flex-row'>
@@ -33,27 +33,25 @@ export function ChatRoom() {
         </div>
         <div className='flex-row' style={{ flex: 1 }}>
             <div className='session-tabs'>
-                {sessionList.map(i => <div key={i.id} onClick={() => selectSession(i)}><SessionTab session={i} /></div>)}
+                {userList.map(i => <div key={i.id} onClick={() => selectUser(i)}><UserTab user={i} /></div>)}
             </div>
-            <SessionContent session={activeSession} />
+            <SessionContent user={activeUser} />
         </div>
 
     </div>
 }
-function SessionTab(props: { session: Session }) {
-    const { users, messageList } = props.session
+function UserTab(props: { user: User }) {
     return <div className='flex-row session-item'>
         <img src="assets/imgs/head.png" width={40} height={40} style={{ borderRadius: 6 }} alt="" />
         <div className='session-item-info'>
             <div className='color333'>
                 <div>{users[1].nick || users[1].userName}</div>
-                <div className='color999'>{messageList[0].content}</div>
             </div>
-            <div className='color999'>{messageList[0].sendTime.toLocaleTimeString()}</div>
+            {/* <div className='color999'>{messageList[0].sendTime.toLocaleTimeString()}</div> */}
         </div>
     </div>
 }
-function SessionContent(props: { session: Session }) {
+function SessionContent(props: { user: User }) {
     const { TextArea } = Input;
     const [inputVal, setInputVal] = useState<string>('')
     return <div className='session-content'>

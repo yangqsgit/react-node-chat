@@ -5,7 +5,8 @@ declare type SessionMessage<T> = {
     sendTime: Date,
     type: MessageType,
     content: T,
-    id: string
+    id: string,
+    sessionId: string
 }
 declare type User = {
     id: number,
@@ -13,7 +14,8 @@ declare type User = {
     userName: string,
     password?: string,
     createTime: Date,
-    status: OnlineStatus
+    status: OnlineStatus,
+    groups?:Array<Session>
 }
 
 declare type Session = {

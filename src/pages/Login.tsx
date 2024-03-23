@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserOutlined } from '@ant-design/icons';
 import { Input, Button, message } from 'antd';
-import { users } from 'src/datas/user';
+import { users } from 'src/utils/datas/user';
 import { useNavigate } from 'react-router-dom';
 import { updateUser } from 'src/store/chatRoom/slice';
 import { store } from 'src/store';
