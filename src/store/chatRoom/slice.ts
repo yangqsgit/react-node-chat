@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { OnlineStatus } from 'src/enums'
 
-// 为 slice state 定义一个类型
 interface ChatRoomState {
   user: User
 }

@@ -30,6 +30,7 @@ function Login() {
         if (!user) {
             message.error('用户名或密码不正确')
         } else {
+            delete user.password
             localStorage.setItem('user', JSON.stringify({ user, expireTime: new Date().getTime() + 12 * 60 * 60 * 1000 }))
             store.dispatch(updateUser(user))
             navigate("/home", { replace: true })

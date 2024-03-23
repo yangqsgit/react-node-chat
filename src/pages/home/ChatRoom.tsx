@@ -4,20 +4,14 @@ import { users } from 'src/utils/datas/user';
 import { MessageType, SessionType } from 'src/enums';
 import { useSelector } from 'react-redux';
 import { RootState } from 'src/store';
-import ChatRoomCore from 'src/utils/chat/chatRoom';
+import creatIm from 'src/utils/chat/chatRoom';
 export function ChatRoom() {
     const user = useSelector<RootState>(state => state.chatRoom.user)
     const list = users.filter(i => i.id !== (user as User).id)
     const [activeUser, setActiveUser] = useState<User>(list[0])
     const [userList] = useState<Array<User>>(list)
 
-    const im = new ChatRoomCore('ws://127.0.0.1:7979?userId=' + (user as User).id, user as User)
-    im.onerror = (e) => {
-        console.log(e, '======err')
-    }
-    im.onmessage = (e) => {
-        console.log(e);
-    }
+    const im = creatIm()
     const [sessions, SetSessions] = useState<Array<Session>>([])
 
 

@@ -1,5 +1,5 @@
 export enum OnlineStatus {
-    ONLINE = '在线', OFFLINE = '离线', STEALTH = '隐身'
+    ONLINE = 'online', OFFLINE = 'offline', STEALTH = 'stealth'
 }
 export enum SessionType {
     C2C, GRUOP
