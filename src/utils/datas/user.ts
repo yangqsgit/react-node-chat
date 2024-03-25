@@ -13,7 +13,4 @@ const getUsers = (): Array<User> => {
     }
     return users
 }
-export const users = getUsers().map(i => {
-    delete i.password
-    return i
-})
+export const users = getUsers()

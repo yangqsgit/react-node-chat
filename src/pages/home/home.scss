@@ -16,21 +16,23 @@
         background-color: $theme-color;
     }
 
-    .session-tabs {
+    .user-tabs {
         width: 200px;
         flex-shrink: 0;
         border-right: 1px solid #dcdcdc;
         height: 100%;
 
-        .session-item {
+        .user-item {
             border-bottom: 1px solid #dcdcdc;
             height: 50px;
             padding: 5px 0px 5px 5px;
             cursor: pointer;
             width: 190px;
         }
-
-        .session-item-info {
+        .active-tab {
+            background-color: $theme-color;
+        }
+        .user-item-info {
             flex: 1;
             display: flex;
             justify-content: space-between;
@@ -38,7 +40,7 @@
         }
     }
 
-    .session-content {
+    .user-content {
         flex: 1;
         @include flex-column-center;
         padding: 10px;

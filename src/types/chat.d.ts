@@ -1,12 +1,13 @@
 
 
-declare type SessionMessage<T> = {
+declare type Message<T> = {
     sender: User,
     sendTime: Date,
     type: MessageType,
     content: T,
     id: string,
-    sessionId: string
+    sessionId: string,
+    sendTo: Array<User>
 }
 declare type User = {
     id: number,
@@ -15,12 +16,6 @@ declare type User = {
     password?: string,
     createTime: Date,
     status: OnlineStatus,
-    groups?:Array<Session>
+    groups?: Array<Session>
 }
 
-declare type Session = {
-    messageList: Array<SessionMessage>,
-    users: Array<User>,
-    id: string,
-    type: SessionType
-}
