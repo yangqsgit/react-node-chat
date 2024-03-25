@@ -1,4 +1,5 @@
 
+import { MessageType } from "src/enums"
 import { store } from "src/store"
 
 // websocket 通信消息
@@ -13,22 +14,67 @@ interface ImMessage {
     id: string,
     sendTime: number
 }
-
+const eventKeys = ['onRecvMsg']
 function genID(type: string) {
-    return new Date().getTime() + type
+    return type + '_' + new Date().getTime()
 }
 function getUser() {
     return store.getState().chatRoom.user
 }
-
+function createTextMsg(sender: User, to: User, content: string): Message<string> {
+    return {
+        sender,
+        type: MessageType.TEXT,
+        sendTo: [to],
+        id: 'message_' + new Date().getTime(),
+        sendTime: new Date().getTime(),
+        content
+    }
+}
+function createImMsg(msg: Message<string>): ImMessage {
+    return {
+        type: ImMessageType.MESSAGE,
+        payload: JSON.stringify(msg),
+        id: genID('imMessage_'),
+        sendTime: new Date().getTime()
+    }
+}
 class ChatRoom extends WebSocket {
     owner: User
+    eventMap: {
+        onRecvMsg: Function | null
+    }
     constructor(url: string | URL, owner: User, protocols?: string | string[]) {
         super(url, protocols)
         this.owner = owner
+        // 绑定的事件集合
+        this.eventMap = { onRecvMsg: null }
     }
-    sendMsg(msg: ImMessage) {
-        this.send(JSON.stringify(msg))
+    sendTextMsg(to: User, content: string) {
+        const msg = createTextMsg(this.owner, to, content)
+        const imMsg: ImMessage = createImMsg(msg)
+        this.send(JSON.stringify(imMsg))
+    }
+    bindEvent(name: string, fn: any) {
+        if (eventKeys.includes(name)) {
+            this.eventMap = Object.assign(this.eventMap, { [name]: fn })
+        }
+    }
+    unbindEvent(name: string) {
+        if (eventKeys.includes(name)) {
+            this.eventMap = Object.assign(this.eventMap, { [name]: null })
+        }
+    }
+    onmessage = (e: any) => {
+        const data = JSON.parse(e.data)
+        const { payload, type } = data
+        console.log('recv event %s', type);
+        switch (type) {
+            case ImMessageType.MESSAGE:
+                if (this.eventMap?.onRecvMsg) {
+                    this.eventMap.onRecvMsg(payload)
+                }
+        }
     }
 }
 
@@ -41,10 +87,12 @@ export default function creatIm() {
         im.onopen = () => {
             console.log('==================连接到聊天服务器');
         }
-        im.onmessage = e => {
-            const data = JSON.parse(e.data)
-            console.log(data);
-        }
+        // im.onmessage = e => {
+        //     console.log(1);
+
+        //     // const data = JSON.parse(e.data)
+        //     // console.log(data);
+        // }
         return im
     } else {
         return null

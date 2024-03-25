@@ -2,12 +2,12 @@
 
 declare type Message<T> = {
     sender: User,
-    sendTime: Date,
+    sendTime: number,
     type: MessageType,
     content: T,
     id: string,
-    sessionId: string,
-    sendTo: Array<User>
+    sendTo: Array<User>,
+    groupId?: string
 }
 declare type User = {
     id: number,

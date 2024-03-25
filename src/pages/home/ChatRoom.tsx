@@ -4,17 +4,22 @@ import { users } from 'src/utils/datas/user';
 import { useSelector } from 'react-redux';
 import { RootState } from 'src/store';
 import creatIm from 'src/utils/chat/chatRoom';
+
 export function ChatRoom() {
     const user: any | User = useSelector<RootState>(state => state.chatRoom.user)
     const list = users.filter(i => i.id !== user.id)
     const [activeUser, setActiveUser] = useState<User>(list[0])
     const [userList] = useState<Array<User>>(list)
-
     const im = creatIm()
-
+    im?.bindEvent('onRecvMsg', (msg: Message<any>) => {
+        console.log(msg);
+    })
     function selectUser(user: User) {
         if (activeUser.id === user.id) return
         setActiveUser(user)
+    }
+    function sendMsg(to: User, content: string) {
+        im?.sendTextMsg(to, content)
     }
     return <div className='chat-room'>
         <div className='user-tab-row flex-row'>
@@ -25,7 +30,7 @@ export function ChatRoom() {
             <div className='user-tabs'>
                 {userList.map(i => <div key={i.id} onClick={() => selectUser(i)}><UserTab user={i} isActive={i.id === activeUser.id} /></div>)}
             </div>
-            <SessionContent user={activeUser} />
+            <SessionContent user={activeUser} sendMsg={sendMsg} />
         </div>
 
     </div>
@@ -38,17 +43,19 @@ function UserTab(props: { user: User, isActive: Boolean }) {
             <div className='color333'>
                 <div>{user.nick || user.userName}</div>
             </div>
-            {/* <div className='color999'>{messageList[0].sendTime.toLocaleTimeString()}</div> */}
         </div>
     </div>
 }
-function SessionContent(props: { user: User }) {
+function SessionContent(props: { user: User, sendMsg: Function }) {
     const { TextArea } = Input;
     const [inputVal, setInputVal] = useState<string>('')
     return <div className='user-content'>
         <div className='message-area'></div>
         <div className='btn-group-row'></div>
         <TextArea
+            onPressEnter={() => {
+                props.sendMsg(props.user, inputVal)
+            }}
             value={inputVal}
             onChange={(e: any) => setInputVal(e.target.value)}
         />
