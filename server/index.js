@@ -42,8 +42,8 @@ function handleMsg(data, userId) {
       const payload = JSON.parse(data.payload)
       if (payload.sendTo.length && !payload.groupId) {
         payload.sendTo.forEach(i => {
-          if (wsMap[i.id + '']) {
-            wsMap[i.id + ''].send(JSON.stringify(createImMsg(payload)))
+          if (wsMap[i.id ]) {
+            wsMap[i.id].send(JSON.stringify(createImMsg(payload)))
           }
         })
       }
@@ -58,8 +58,8 @@ const wss = new WebSocketServer({ port: 7979 });
 wss.on('connection', function connection(ws, req) {
   const userId = getParam(req, 'userId')
   // 记录连接的用户
-  wsMap[userId + ''] = ws
-
+  // if (wsMap[userId]) return
+  wsMap[userId] = ws
   ws.on('error', console.error);
   ws.on('message', function message(data) {
     // console.log('received: %s', data)

@@ -29,9 +29,11 @@
             cursor: pointer;
             width: 190px;
         }
+
         .active-tab {
             background-color: $theme-color;
         }
+
         .user-item-info {
             flex: 1;
             display: flex;
@@ -40,27 +42,30 @@
         }
     }
 
+    .session-area {
+        padding: 10px;
+    }
+
     .user-content {
         flex: 1;
         @include flex-column-center;
-        padding: 10px;
-
         .message-area {
             flex: 1;
             margin-bottom: 20px;
             width: 100%;
             border: 1px solid #dcdcdc;
             border-radius: 6px;
+            padding: 10px;
         }
+    }
 
-        .ant-input {
-            height: 150px !important;
-            flex-shrink: 0;
-            width: 100%;
-            border: 1px solid #dcdcdc;
-            border-radius: 6px;
-            resize: none;
-            color: #333;
-        }
+    .ant-input {
+        height: 150px !important;
+        flex-shrink: 0;
+        width: 100%;
+        border: 1px solid #dcdcdc;
+        border-radius: 6px;
+        resize: none;
+        color: #333;
     }
 }

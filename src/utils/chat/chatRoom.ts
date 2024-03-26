@@ -2,7 +2,7 @@
 import { MessageType } from "src/enums"
 import { store } from "src/store"
 
-// websocket 通信消息
+// websocket 通信消息类型
 enum ImMessageType {
     MESSAGE = 'MESSAGE',
     UPDATE_USER_STATUS = 'UPDATE_USER_STATUS',
@@ -31,6 +31,7 @@ function createTextMsg(sender: User, to: User, content: string): Message<string>
         content
     }
 }
+// wensocket 实际传输的消息
 function createImMsg(msg: Message<string>): ImMessage {
     return {
         type: ImMessageType.MESSAGE,
@@ -53,7 +54,13 @@ class ChatRoom extends WebSocket {
     sendTextMsg(to: User, content: string) {
         const msg = createTextMsg(this.owner, to, content)
         const imMsg: ImMessage = createImMsg(msg)
+        // console.log('send msg', imMsg);
         this.send(JSON.stringify(imMsg))
+        // 自己发的消息转发一份到自己聊天框
+        if (this.eventMap?.onRecvMsg) {
+            this.eventMap.onRecvMsg(msg)
+        }
+
     }
     bindEvent(name: string, fn: any) {
         if (eventKeys.includes(name)) {
@@ -71,9 +78,12 @@ class ChatRoom extends WebSocket {
         console.log('recv event %s', type);
         switch (type) {
             case ImMessageType.MESSAGE:
-                if (this.eventMap?.onRecvMsg) {
-                    this.eventMap.onRecvMsg(payload)
-                }
+                // 只处理接收者里有用户的消息
+                if (payload.sendTo.some((i: { id: string }) => i.id === this.owner.id))
+                    if (this.eventMap?.onRecvMsg) {
+                        this.eventMap.onRecvMsg(payload)
+
+                    }
         }
     }
 }

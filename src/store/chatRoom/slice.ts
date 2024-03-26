@@ -8,7 +8,7 @@ interface ChatRoomState {
 // 使用该类型定义初始 state
 const initialState: ChatRoomState = {
   user: {
-    id: 0,
+    id: '0',
     userName: '',
     status: OnlineStatus.OFFLINE,
     createTime: new Date()

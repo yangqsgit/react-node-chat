@@ -10,12 +10,13 @@ declare type Message<T> = {
     groupId?: string
 }
 declare type User = {
-    id: number,
+    id: string,
     nick?: string,
     userName: string,
     password?: string,
     createTime: Date,
     status: OnlineStatus,
-    groups?: Array<Session>
+    groups?: Array<Session>,
+    messageList?: Array<Message>
 }
 

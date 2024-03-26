@@ -1,25 +1,59 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Input } from 'antd';
 import { users } from 'src/utils/datas/user';
 import { useSelector } from 'react-redux';
 import { RootState } from 'src/store';
 import creatIm from 'src/utils/chat/chatRoom';
-
+// import { MessageType } from 'src/enums';
 export function ChatRoom() {
     const user: any | User = useSelector<RootState>(state => state.chatRoom.user)
     const list = users.filter(i => i.id !== user.id)
-    const [activeUser, setActiveUser] = useState<User>(list[0])
-    const [userList] = useState<Array<User>>(list)
-    const im = creatIm()
+    const [activeUserId, setactiveUserId] = useState<string>(list[0].id)
+    const [userList, setUserList] = useState<Array<User>>(list)
+    const [im, setIm] = useState<any>()
+    useEffect(() => {
+        setIm(creatIm())
+        setactiveUserId(list[0].id)
+    }, [])
+    const messageList: Array<Message<any>> = useMemo(() => {
+        return userList.find(i => i.id === activeUserId)?.messageList as Array<Message<any>>
+    }, [activeUserId, userList])
+
     im?.bindEvent('onRecvMsg', (msg: Message<any>) => {
-        console.log(msg);
+        const { sender, sendTo } = msg
+        if (sender.id === user.id) {
+            //自己发的消息
+            if (msg.groupId) {
+                // 群消息
+            } else {
+                const to: User = sendTo[0]
+                addMsgToUser(to, msg)
+            }
+        } else {
+            if (msg.groupId) {
+                // 群消息
+            } else {
+                addMsgToUser(sender, msg)
+            }
+        }
     })
-    function selectUser(user: User) {
-        if (activeUser.id === user.id) return
-        setActiveUser(user)
+    function addMsgToUser(user: User, msg: Message<any>) {
+        const ml = JSON.parse(JSON.stringify(userList))
+        const index = ml.findIndex((i: { id: string; }) => {
+            return i.id === user.id
+        })
+        if (index !== -1) {
+            ml[index].messageList.push(msg)
+            setUserList(ml)
+        }
     }
-    function sendMsg(to: User, content: string) {
-        im?.sendTextMsg(to, content)
+    function selectUser(user: User) {
+        if (activeUserId === user.id) return
+        setactiveUserId(user.id)
+    }
+    function sendMsg(content: string) {
+        im?.sendTextMsg(userList.find(i => i.id === activeUserId), content)
+
     }
     return <div className='chat-room'>
         <div className='user-tab-row flex-row'>
@@ -28,14 +62,17 @@ export function ChatRoom() {
         </div>
         <div className='flex-row' style={{ flex: 1 }}>
             <div className='user-tabs'>
-                {userList.map(i => <div key={i.id} onClick={() => selectUser(i)}><UserTab user={i} isActive={i.id === activeUser.id} /></div>)}
+                {userList.map(i => <div key={i.id} onClick={() => selectUser(i)}><UserTab user={i} isActive={i.id === activeUserId} /></div>)}
             </div>
-            <SessionContent user={activeUser} sendMsg={sendMsg} />
+            <div className='session-area flex-column' style={{ flex: 1 }}>
+                <SessionContent messageList={messageList} />
+                <InputArea sendMsg={sendMsg} />
+            </div>
         </div>
-
     </div>
 }
 function UserTab(props: { user: User, isActive: Boolean }) {
+
     const { user, isActive } = props
     return <div className={'flex-row user-item' + (isActive ? ' active-tab' : '')} >
         <img src="assets/imgs/head.png" width={40} height={40} style={{ borderRadius: 6 }} alt="" />
@@ -46,18 +83,26 @@ function UserTab(props: { user: User, isActive: Boolean }) {
         </div>
     </div>
 }
-function SessionContent(props: { user: User, sendMsg: Function }) {
-    const { TextArea } = Input;
-    const [inputVal, setInputVal] = useState<string>('')
+function SessionContent(props: { messageList: Array<Message<any>> }) {
+    useEffect(() => {
+        console.log('==========render');
+    })
     return <div className='user-content'>
-        <div className='message-area'></div>
-        <div className='btn-group-row'></div>
-        <TextArea
-            onPressEnter={() => {
-                props.sendMsg(props.user, inputVal)
-            }}
-            value={inputVal}
-            onChange={(e: any) => setInputVal(e.target.value)}
-        />
+        <div className='message-area'>
+            {props.messageList.map(i => <div key={i.id} className='message-item'>{i.content}</div>)}
+        </div>
     </div>
+}
+function InputArea(props: { sendMsg: Function }) {
+    const [inputVal, setInputVal] = useState<string>('')
+    const { sendMsg } = props
+    const { TextArea } = Input;
+    return <TextArea
+        onPressEnter={() => {
+            sendMsg(inputVal)
+            setInputVal('')
+        }}
+        value={inputVal}
+        onChange={(e: any) => setInputVal(e.target.value)}
+    />
 }
