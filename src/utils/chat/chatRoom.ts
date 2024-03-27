@@ -14,6 +14,7 @@ interface ImMessage {
     id: string,
     sendTime: number
 }
+// im可绑定的事件回调函数key
 const eventKeys = ['onRecvMsg']
 function genID(type: string) {
     return type + '_' + new Date().getTime()

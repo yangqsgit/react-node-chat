@@ -1,7 +1,25 @@
 @import './mixin.scss';
+
 * {
     box-sizing: border-box
 }
+
+*::-webkit-scrollbar {
+    width: 6px;
+    background-color: #dcdcdc;
+    border-radius: 3px;
+}
+
+*::-webkit-scrollbar-button {
+    display: none;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #999;
+    border-radius: 3px;
+}
+
+
 .flex-row {
     @include flex-row;
 }
@@ -25,6 +43,7 @@
 .color333 {
     color: #333;
 }
+
 .color999 {
     color: #999;
 }

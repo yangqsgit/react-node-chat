@@ -1,23 +1,38 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Input } from 'antd';
 import { users } from 'src/utils/datas/user';
 import { useSelector } from 'react-redux';
 import { RootState } from 'src/store';
 import creatIm from 'src/utils/chat/chatRoom';
-// import { MessageType } from 'src/enums';
+import { timeFormat } from 'src/utils/common';
+
+let UserContext = createContext(null)
 export function ChatRoom() {
+    // 当前登录用户
     const user: any | User = useSelector<RootState>(state => state.chatRoom.user)
     const list = users.filter(i => i.id !== user.id)
+    // 当前聊天对象，初始化为聊天列表第一个
     const [activeUserId, setactiveUserId] = useState<string>(list[0].id)
     const [userList, setUserList] = useState<Array<User>>(list)
     const [im, setIm] = useState<any>()
+    // 聊天区域滚动高度
+    const [srcollHeight, setSrcollHeight] = useState<Number>(0)
+    // 是否需要滚动
+    const [doScroll, setDoScroll] = useState<boolean>(false)
+
     useEffect(() => {
         setIm(creatIm())
         setactiveUserId(list[0].id)
     }, [])
+    useLayoutEffect(() => {
+        if (doScroll) {
+        }
+    }, [doScroll])
+    useEffect(() => { }, [doScroll, srcollHeight])
     const messageList: Array<Message<any>> = useMemo(() => {
         return userList.find(i => i.id === activeUserId)?.messageList as Array<Message<any>>
     }, [activeUserId, userList])
+
 
     im?.bindEvent('onRecvMsg', (msg: Message<any>) => {
         const { sender, sendTo } = msg
@@ -55,17 +70,20 @@ export function ChatRoom() {
         im?.sendTextMsg(userList.find(i => i.id === activeUserId), content)
 
     }
+
     return <div className='chat-room'>
         <div className='user-tab-row flex-row'>
             <img src="assets/imgs/head.png" width={50} height={50} style={{ borderRadius: 6 }} alt="" />
             <div className='color333' style={{ padding: '0px 10px', fontSize: 16, fontWeight: 600 }}>{user.nick || user.userName}</div>
         </div>
-        <div className='flex-row' style={{ flex: 1 }}>
+        <div className='flex-row' style={{ flex: 1, overflow: 'hidden' }}>
             <div className='user-tabs'>
                 {userList.map(i => <div key={i.id} onClick={() => selectUser(i)}><UserTab user={i} isActive={i.id === activeUserId} /></div>)}
             </div>
             <div className='session-area flex-column' style={{ flex: 1 }}>
-                <SessionContent messageList={messageList} />
+                <UserContext.Provider value={user}>
+                    <SessionContent messageList={messageList} />
+                </UserContext.Provider>
                 <InputArea sendMsg={sendMsg} />
             </div>
         </div>
@@ -84,12 +102,24 @@ function UserTab(props: { user: User, isActive: Boolean }) {
     </div>
 }
 function SessionContent(props: { messageList: Array<Message<any>> }) {
-    useEffect(() => {
-        console.log('==========render');
-    })
     return <div className='user-content'>
         <div className='message-area'>
-            {props.messageList.map(i => <div key={i.id} className='message-item'>{i.content}</div>)}
+            <div style={{ width: 320 }}>
+                {props.messageList.map(i => <MessageItem key={i.id} msg={i} />)}
+            </div>
+        </div>
+    </div>
+}
+function MessageItem(props: { msg: Message<any> }) {
+    const user: User = useContext(UserContext) as unknown as User
+    const { msg } = props
+    return <div className='message-item'>
+        <div className='message-info-row'>
+            <span style={{ color: user.id === msg.sender.id ? '#00ccff' : '#999' }}>{msg.sender.nick || msg.sender.userName}</span>
+            <span style={{ marginLeft: 10, color: '#999' }}>{timeFormat(new Date(msg.sendTime))}</span>
+        </div>
+        <div className='messge-bubble'>
+            <div>{msg.content}</div>
         </div>
     </div>
 }
@@ -98,7 +128,8 @@ function InputArea(props: { sendMsg: Function }) {
     const { sendMsg } = props
     const { TextArea } = Input;
     return <TextArea
-        onPressEnter={() => {
+        onPressEnter={(e) => {
+            e.preventDefault()
             sendMsg(inputVal)
             setInputVal('')
         }}
