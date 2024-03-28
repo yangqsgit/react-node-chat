@@ -85,7 +85,9 @@
   },
   "keywords": [
     "react",
-    "websocket"
+    "websocket",
+    "chat",
+    "chat room"
   ],
   "browserslist": {
     "production": [
