@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'src/store';
 import creatIm from 'src/utils/chat/chatRoom';
 import { timeFormat } from 'src/utils/common';
-
+import lodash from 'lodash'
 let UserContext = createContext(null)
 export function ChatRoom() {
     // 当前登录用户
@@ -15,20 +15,38 @@ export function ChatRoom() {
     const [activeUserId, setactiveUserId] = useState<string>(list[0].id)
     const [userList, setUserList] = useState<Array<User>>(list)
     const [im, setIm] = useState<any>()
+
     // 聊天区域滚动高度
     const [srcollHeight, setSrcollHeight] = useState<Number>(0)
     // 是否需要滚动
     const [doScroll, setDoScroll] = useState<boolean>(false)
+    // 聊天列表是否停止滚动（鼠标在消息列表上滚动后触发状态修改）
+    const [msgViewFixed, setMsgViewFixed] = useState<boolean>(false)
+    // 底部新消息提示
+    const [newMsgTp, setNewMsgTip] = useState<boolean>(false)
+
 
     useEffect(() => {
         setIm(creatIm())
         setactiveUserId(list[0].id)
     }, [])
+    // 计算需要滚动的高度
     useLayoutEffect(() => {
-        if (doScroll) {
+        if (doScroll && !msgViewFixed) {
+            const sl = document.querySelector('#scroll-list')
+            const rect = sl?.getBoundingClientRect()
+            setSrcollHeight(rect?.height as number)
         }
-    }, [doScroll])
-    useEffect(() => { }, [doScroll, srcollHeight])
+    }, [doScroll, msgViewFixed])
+    // 
+    useEffect(() => {
+        if (doScroll) {
+            const sw = document.querySelector('#scroll-view')
+            sw?.scrollTo({ top: srcollHeight as number, left: 0, behavior: 'smooth' })
+            setDoScroll(false)
+        }
+    }, [doScroll, srcollHeight])
+
     const messageList: Array<Message<any>> = useMemo(() => {
         return userList.find(i => i.id === activeUserId)?.messageList as Array<Message<any>>
     }, [activeUserId, userList])
@@ -51,6 +69,12 @@ export function ChatRoom() {
                 addMsgToUser(sender, msg)
             }
         }
+        if (msgViewFixed) {
+            setNewMsgTip(true)
+        } else {
+            setDoScroll(true)
+        }
+
     })
     function addMsgToUser(user: User, msg: Message<any>) {
         const ml = JSON.parse(JSON.stringify(userList))
@@ -68,9 +92,20 @@ export function ChatRoom() {
     }
     function sendMsg(content: string) {
         im?.sendTextMsg(userList.find(i => i.id === activeUserId), content)
-
     }
-
+    // 当鼠标在聊天列表滚动式
+    function scrollMsgView(e: any) {
+        if (e.target) {
+            const sl = e.target.querySelector('#scroll-list')
+            const slRect = sl?.getBoundingClientRect()
+            const eRect = e.target.getBoundingClientRect()
+            if ((slRect.bottom - eRect.bottom) <= 30) {
+                setMsgViewFixed(false)
+            } else {
+                setMsgViewFixed(true)
+            }
+        }
+    }
     return <div className='chat-room'>
         <div className='user-tab-row flex-row'>
             <img src="assets/imgs/head.png" width={50} height={50} style={{ borderRadius: 6 }} alt="" />
@@ -82,7 +117,7 @@ export function ChatRoom() {
             </div>
             <div className='session-area flex-column' style={{ flex: 1 }}>
                 <UserContext.Provider value={user}>
-                    <SessionContent messageList={messageList} />
+                    <SessionContent scrollMsgView={scrollMsgView} messageList={messageList} showNewMsgTip={msgViewFixed} />
                 </UserContext.Provider>
                 <InputArea sendMsg={sendMsg} />
             </div>
@@ -90,7 +125,6 @@ export function ChatRoom() {
     </div>
 }
 function UserTab(props: { user: User, isActive: Boolean }) {
-
     const { user, isActive } = props
     return <div className={'flex-row user-item' + (isActive ? ' active-tab' : '')} >
         <img src="assets/imgs/head.png" width={40} height={40} style={{ borderRadius: 6 }} alt="" />
@@ -101,10 +135,13 @@ function UserTab(props: { user: User, isActive: Boolean }) {
         </div>
     </div>
 }
-function SessionContent(props: { messageList: Array<Message<any>> }) {
+function SessionContent(props: { messageList: Array<Message<any>>, scrollMsgView: Function, showNewMsgTip: boolean }) {
     return <div className='user-content'>
-        <div className='message-area'>
-            <div style={{ width: 320 }}>
+        <div className='message-area' onScroll={lodash.debounce((e) => {
+            props.scrollMsgView(e)
+
+        }, 200)} id='scroll-view'>
+            <div style={{ width: 320 }} id='scroll-list'>
                 {props.messageList.map(i => <MessageItem key={i.id} msg={i} />)}
             </div>
         </div>
