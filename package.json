@@ -70,6 +70,7 @@
     "workbox-webpack-plugin": "^6.4.1",
     "ws": "^8.16.0"
   },
+  "description": "用于学习react项目，目前正在开发聊天室功能",
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
@@ -82,6 +83,10 @@
       "react-app/jest"
     ]
   },
+  "keywords": [
+    "react",
+    "websocket"
+  ],
   "browserslist": {
     "production": [
       ">0.2%",

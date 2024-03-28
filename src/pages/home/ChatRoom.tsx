@@ -93,7 +93,7 @@ export function ChatRoom() {
     function sendMsg(content: string) {
         im?.sendTextMsg(userList.find(i => i.id === activeUserId), content)
     }
-    // 当鼠标在聊天列表滚动式
+    // 当鼠标在聊天列表滚动时
     function scrollMsgView(e: any) {
         if (e.target) {
             const sl = e.target.querySelector('#scroll-list')
