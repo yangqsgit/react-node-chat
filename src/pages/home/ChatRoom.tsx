@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { createContext, memo, useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Input } from 'antd';
 import { users } from 'src/utils/datas/user';
 import { useSelector } from 'react-redux';
@@ -136,6 +136,7 @@ function UserTab(props: { user: User, isActive: Boolean }) {
     </div>
 }
 function SessionContent(props: { messageList: Array<Message<any>>, scrollMsgView: Function, showNewMsgTip: boolean }) {
+
     return <div className='user-content'>
         <div className='message-area' onScroll={lodash.debounce((e) => {
             props.scrollMsgView(e)
@@ -147,7 +148,8 @@ function SessionContent(props: { messageList: Array<Message<any>>, scrollMsgView
         </div>
     </div>
 }
-function MessageItem(props: { msg: Message<any> }) {
+const MessageItem = memo(function MessageItem(props: { msg: Message<any> }) {
+    console.log('========rend')
     const user: User = useContext(UserContext) as unknown as User
     const { msg } = props
     return <div className='message-item'>
@@ -159,7 +161,24 @@ function MessageItem(props: { msg: Message<any> }) {
             <div>{msg.content}</div>
         </div>
     </div>
-}
+}, function (prevProps: any, nextProps: any): boolean {
+    return prevProps.id === nextProps.id
+})
+// function MessageItem(props: { msg: Message<any> }) {
+//     console.log('========rend')
+
+//     const user: User = useContext(UserContext) as unknown as User
+//     const { msg } = props
+//     return <div className='message-item'>
+//         <div className='message-info-row'>
+//             <span style={{ color: user.id === msg.sender.id ? '#00ccff' : '#999' }}>{msg.sender.nick || msg.sender.userName}</span>
+//             <span style={{ marginLeft: 10, color: '#999' }}>{timeFormat(new Date(msg.sendTime))}</span>
+//         </div>
+//         <div className='messge-bubble'>
+//             <div>{msg.content}</div>
+//         </div>
+//     </div>
+// }
 function InputArea(props: { sendMsg: Function }) {
     const [inputVal, setInputVal] = useState<string>('')
     const { sendMsg } = props
