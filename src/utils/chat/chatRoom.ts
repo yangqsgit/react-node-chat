@@ -22,11 +22,22 @@ function genID(type: string) {
 function getUser() {
     return store.getState().chatRoom.user
 }
+// 优化发送数据的大小，删除用户多余字段
+function deleteUserKey(user: User) {
+    return {
+        id: user.id,
+        nick: user.nick,
+        userName: user.userName,
+        createTime: user.createTime,
+        status: user.status,
+    }
+}
+
 function createTextMsg(sender: User, to: User, content: string): Message<string> {
     return {
-        sender,
+        sender: deleteUserKey(sender),
         type: MessageType.TEXT,
-        sendTo: [to],
+        sendTo: [deleteUserKey(to)],
         id: 'message_' + new Date().getTime(),
         sendTime: new Date().getTime(),
         content
@@ -57,6 +68,8 @@ class ChatRoom extends WebSocket {
         const imMsg: ImMessage = createImMsg(msg)
         // console.log('send msg', imMsg);
         this.send(JSON.stringify(imMsg))
+        console.log(imMsg)
+
         // 自己发的消息转发一份到自己聊天框
         if (this.eventMap?.onRecvMsg) {
             this.eventMap.onRecvMsg(msg)
