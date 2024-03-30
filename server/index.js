@@ -18,16 +18,14 @@ function getParam(req, key) {
 function genID(type) {
   return type + '_' + new Date().getTime()
 }
-// function createMsg({ type, status = 'success' }) {
-//   return {
-//     type,
-//     status,
-//     id: genID(type)
-//   }
-// }
-function createImMsg(msg) {
+
+// 检查sendTo是否在线上
+function checkUserIsOnline(user) {
+  return !!wsMap[user.id]
+}
+function createImMsg(msg, type = types.MESSAGE) {
   const imMsg = {
-    type: types.MESSAGE,
+    type,
     payload: msg,
     id: genID('imMessage_'),
     sendTime: new Date().getTime()
@@ -41,11 +39,17 @@ function handleMsg(data, userId) {
     case types.MESSAGE: {
       const payload = JSON.parse(data.payload)
       if (payload.sendTo.length && !payload.groupId) {
-        payload.sendTo.forEach(i => {
-          if (wsMap[i.id ]) {
-            wsMap[i.id].send(JSON.stringify(createImMsg(payload)))
-          }
-        })
+        if (checkUserIsOnline(payload.sendTo[0])) {
+          payload.sendTo.forEach(i => {
+            if (wsMap[i.id]) {
+              wsMap[i.id].send(JSON.stringify(createImMsg(payload)))
+            }
+          })
+        } else {
+          const { nick, userName } = payload.sendTo[0]
+          const msg = createImMsg({ code: '10001', msg: `${nick || userName}未上线` }, types.ERROR)
+          wsMap[payload.sender.id].send(JSON.stringify(msg))
+        }
       }
     }
 

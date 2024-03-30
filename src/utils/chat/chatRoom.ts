@@ -1,12 +1,16 @@
 
+import { message } from "antd"
 import { MessageType } from "src/enums"
 import { store } from "src/store"
-
+const errorCodeMap: any = {
+    10001: '用户未登录'
+}
 // websocket 通信消息类型
 enum ImMessageType {
     MESSAGE = 'MESSAGE',
     UPDATE_USER_STATUS = 'UPDATE_USER_STATUS',
-    CREATE_GROUP = 'CREATE_GROUP'
+    CREATE_GROUP = 'CREATE_GROUP',
+    ERROR = 'ERROR'
 }
 interface ImMessage {
     type: ImMessageType,
@@ -55,13 +59,14 @@ function createImMsg(msg: Message<string>): ImMessage {
 class ChatRoom extends WebSocket {
     owner: User
     eventMap: {
-        onRecvMsg: Function | null
+        onRecvMsg: Function | null,
+        onError: Function | null
     }
     constructor(url: string | URL, owner: User, protocols?: string | string[]) {
         super(url, protocols)
         this.owner = owner
         // 绑定的事件集合
-        this.eventMap = { onRecvMsg: null }
+        this.eventMap = { onRecvMsg: null, onError: null }
     }
     sendTextMsg(to: User, content: string) {
         const msg = createTextMsg(this.owner, to, content)
@@ -98,6 +103,12 @@ class ChatRoom extends WebSocket {
                         this.eventMap.onRecvMsg(payload)
 
                     }
+                break
+            case ImMessageType.ERROR:
+                message.error(payload.msg || errorCodeMap[payload.code])
+                if (this.eventMap?.onError) {
+                    this.eventMap.onError(payload)
+                }
         }
     }
 }
