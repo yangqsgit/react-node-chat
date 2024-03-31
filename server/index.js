@@ -2,9 +2,9 @@
 const { WebSocketServer } = require('ws')
 const types = {
   MESSAGE: 'MESSAGE',
-  UPDATE_USER_STATUS: 'UPDATE_USER_STATUS',
+  UPDATE_ONLINE_USERS: 'UPDATE_ONLINE_USERS',
   CREATE_GROUP: 'CREATE_GROUP',
-  ERROR: 'ERROR'
+  ERROR: 'ERROR',
 }
 const wsMap = {}
 const sessionMap = {}
@@ -62,8 +62,11 @@ const wss = new WebSocketServer({ port: 7979 });
 wss.on('connection', function connection(ws, req) {
   const userId = getParam(req, 'userId')
   // 记录连接的用户
-  // if (wsMap[userId]) return
   wsMap[userId] = ws
+  // 发送在线用户列表给用户
+  const msg = createImMsg(Object.keys(wsMap), types.UPDATE_ONLINE_USERS)
+  ws.send(JSON.stringify(msg))
+
   ws.on('error', console.error);
   ws.on('message', function message(data) {
     // console.log('received: %s', data)

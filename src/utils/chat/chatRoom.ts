@@ -8,9 +8,9 @@ const errorCodeMap: any = {
 // websocket 通信消息类型
 enum ImMessageType {
     MESSAGE = 'MESSAGE',
-    UPDATE_USER_STATUS = 'UPDATE_USER_STATUS',
+    UPDATE_ONLINE_USERS = 'UPDATE_ONLINE_USERS',
     CREATE_GROUP = 'CREATE_GROUP',
-    ERROR = 'ERROR'
+    ERROR = 'ERROR',
 }
 interface ImMessage {
     type: ImMessageType,
@@ -19,7 +19,7 @@ interface ImMessage {
     sendTime: number
 }
 // im可绑定的事件回调函数key
-const eventKeys = ['onRecvMsg']
+const eventKeys = ['onRecvMsg', 'onUpdateOnlineUsers']
 function genID(type: string) {
     return type + '_' + new Date().getTime()
 }
@@ -60,13 +60,14 @@ class ChatRoom extends WebSocket {
     owner: User
     eventMap: {
         onRecvMsg: Function | null,
-        onError: Function | null
+        onError: Function | null,
+        onUpdateOnlineUsers: Function | null
     }
     constructor(url: string | URL, owner: User, protocols?: string | string[]) {
         super(url, protocols)
         this.owner = owner
         // 绑定的事件集合
-        this.eventMap = { onRecvMsg: null, onError: null }
+        this.eventMap = { onRecvMsg: null, onError: null, onUpdateOnlineUsers: null }
     }
     sendTextMsg(to: User, content: string) {
         const msg = createTextMsg(this.owner, to, content)
@@ -109,6 +110,12 @@ class ChatRoom extends WebSocket {
                 if (this.eventMap?.onError) {
                     this.eventMap.onError(payload)
                 }
+                break
+            case ImMessageType.UPDATE_ONLINE_USERS:
+                if (this.eventMap?.onUpdateOnlineUsers) {
+                    this.eventMap.onUpdateOnlineUsers(payload)
+                }
+
         }
     }
 }

@@ -6,6 +6,7 @@ import { RootState } from 'src/store';
 import creatIm from 'src/utils/chat/chatRoom';
 import { timeFormat } from 'src/utils/common';
 import lodash from 'lodash'
+import { OnlineStatus } from 'src/enums';
 let UserContext = createContext(null)
 export function ChatRoom() {
     // 当前登录用户
@@ -76,6 +77,19 @@ export function ChatRoom() {
         }
 
     })
+    im?.bindEvent('onUpdateOnlineUsers', (list: Array<string>) => {
+        const ul: User[] = JSON.parse(JSON.stringify(userList))
+        setUserList(function (): User[] {
+            return ul.map(i => {
+                if (list.includes(i.id)) {
+                    i.status = OnlineStatus.ONLINE
+                } else {
+                    i.status = OnlineStatus.OFFLINE
+                }
+                return i
+            })
+        })
+    })
     function addMsgToUser(user: User, msg: Message<any>) {
         const ml = JSON.parse(JSON.stringify(userList))
         const index = ml.findIndex((i: { id: string; }) => {
@@ -124,7 +138,7 @@ export function ChatRoom() {
         </div>
     </div>
 }
-function UserTab(props: { user: User, isActive: Boolean }) {
+const UserTab = memo(function UserTab(props: { user: User, isActive: Boolean }) {
     const { user, isActive } = props
     return <div className={'flex-row user-item' + (isActive ? ' active-tab' : '')} >
         <img src="assets/imgs/head.png" width={40} height={40} style={{ borderRadius: 6 }} alt="" />
@@ -132,9 +146,30 @@ function UserTab(props: { user: User, isActive: Boolean }) {
             <div className='color333'>
                 <div>{user.nick || user.userName}</div>
             </div>
+            {user.status === OnlineStatus.ONLINE && <div style={{
+                fontSize: 12,
+                color: 'blue',
+                alignSelf: 'flex-end',
+                marginRight: 5
+            }}>在线</div>}
         </div>
     </div>
-}
+}, function (prevProps: any, nextProps: any): boolean {
+    const obj1 = {
+        userName: prevProps.user.userName,
+        nick: prevProps.user.nick,
+        status: prevProps.user.status,
+        isActive: prevProps.isActive
+    }
+    const obj2 = {
+        userName: nextProps.user.userName,
+        nick: nextProps.user.nick,
+        status: nextProps.user.status,
+        isActive: nextProps.isActive
+    }
+    return JSON.stringify(obj1) === JSON.stringify(obj2)
+})
+
 function SessionContent(props: { messageList: Array<Message<any>>, scrollMsgView: Function, showNewMsgTip: boolean }) {
 
     return <div className='user-content'>
