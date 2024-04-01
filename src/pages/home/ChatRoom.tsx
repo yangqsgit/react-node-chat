@@ -25,11 +25,10 @@ export function ChatRoom() {
     const [msgViewFixed, setMsgViewFixed] = useState<boolean>(false)
     // 底部新消息提示
     const [newMsgTp, setNewMsgTip] = useState<boolean>(false)
-
-
     useEffect(() => {
         setIm(creatIm())
         setactiveUserId(list[0].id)
+
     }, [])
     // 计算需要滚动的高度
     useLayoutEffect(() => {
@@ -39,7 +38,12 @@ export function ChatRoom() {
             setSrcollHeight(rect?.height as number)
         }
     }, [doScroll, msgViewFixed])
-    // 
+    useEffect(() => {
+        return () => {
+            im?.close()
+        }
+    }, [])
+
     useEffect(() => {
         if (doScroll) {
             const sw = document.querySelector('#scroll-view')
@@ -138,6 +142,7 @@ export function ChatRoom() {
         </div>
     </div>
 }
+
 const UserTab = memo(function UserTab(props: { user: User, isActive: Boolean }) {
     const { user, isActive } = props
     return <div className={'flex-row user-item' + (isActive ? ' active-tab' : '')} >
@@ -183,6 +188,7 @@ function SessionContent(props: { messageList: Array<Message<any>>, scrollMsgView
         </div>
     </div>
 }
+
 const MessageItem = memo(function MessageItem(props: { msg: Message<any> }) {
     console.log('========rend')
     const user: User = useContext(UserContext) as unknown as User
@@ -199,21 +205,6 @@ const MessageItem = memo(function MessageItem(props: { msg: Message<any> }) {
 }, function (prevProps: any, nextProps: any): boolean {
     return prevProps.id === nextProps.id
 })
-// function MessageItem(props: { msg: Message<any> }) {
-//     console.log('========rend')
-
-//     const user: User = useContext(UserContext) as unknown as User
-//     const { msg } = props
-//     return <div className='message-item'>
-//         <div className='message-info-row'>
-//             <span style={{ color: user.id === msg.sender.id ? '#00ccff' : '#999' }}>{msg.sender.nick || msg.sender.userName}</span>
-//             <span style={{ marginLeft: 10, color: '#999' }}>{timeFormat(new Date(msg.sendTime))}</span>
-//         </div>
-//         <div className='messge-bubble'>
-//             <div>{msg.content}</div>
-//         </div>
-//     </div>
-// }
 function InputArea(props: { sendMsg: Function }) {
     const [inputVal, setInputVal] = useState<string>('')
     const { sendMsg } = props

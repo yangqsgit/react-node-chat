@@ -32,6 +32,15 @@ function createImMsg(msg, type = types.MESSAGE) {
   }
   return imMsg
 }
+// 发送在线用户列表给所有用户
+function updateAllUserStatus() {
+  if (Object.keys(wsMap).length) {
+    Object.keys(wsMap).forEach(key => {
+      const msg = createImMsg(Object.keys(wsMap), types.UPDATE_ONLINE_USERS)
+      wsMap[key].send(JSON.stringify(msg))
+    })
+  }
+}
 function handleMsg(data, userId) {
   switch (data.type) {
     case types.DELEET_SESSION: { }
@@ -64,14 +73,17 @@ wss.on('connection', function connection(ws, req) {
   // 记录连接的用户
   wsMap[userId] = ws
   // 发送在线用户列表给用户
-  const msg = createImMsg(Object.keys(wsMap), types.UPDATE_ONLINE_USERS)
-  ws.send(JSON.stringify(msg))
-
+  // const msg = createImMsg(Object.keys(wsMap), types.UPDATE_ONLINE_USERS)
+  // ws.send(JSON.stringify(msg))
+  updateAllUserStatus()
   ws.on('error', console.error);
   ws.on('message', function message(data) {
     // console.log('received: %s', data)
     handleMsg(JSON.parse(data), userId)
   });
-
+  ws.on('close', function close(data) {
+    delete wsMap[userId]
+    updateAllUserStatus()
+  });
   // ws.send('something');
 });
